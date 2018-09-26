@@ -18,7 +18,8 @@
         "phpunit/phpunit": "^7.3",
         "fzaninotto/faker": "^1.8",
         "symfony/finder": "^4.1",
-        "symfony/var-dumper": "^4.1"
+        "symfony/var-dumper": "^4.1",
+        "illuminate/pagination": "5.7.*"
     },
     "autoload": {
         "psr-4": {

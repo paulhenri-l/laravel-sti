@@ -6,7 +6,7 @@ use Tests\Fakes\Member;
 use Tests\Fakes\RegularMember;
 use Tests\TestCase;
 
-class STISubtypeStaticTest extends TestCase
+class STISubtypeTest extends TestCase
 {
     /** @test */
     public function update_or_create_should_return_an_object_of_the_correct_type_if_it_updates_it()

@@ -7,7 +7,7 @@ use Tests\Fakes\PremiumMember;
 use Tests\Fakes\RegularMember;
 use Tests\TestCase;
 
-class STIParentStaticTest extends TestCase
+class STIParentTest extends TestCase
 {
     /** @test */
     public function first_should_return_an_object_of_the_correct_type()
@@ -137,6 +137,23 @@ class STIParentStaticTest extends TestCase
     }
 
     /** @test */
+    public function paginate_should_return_objects_of_different_types()
+    {
+        $this->factory(Member::class, 2)->state(PremiumMember::class)->create();
+        $this->factory(Member::class, 1)->state(RegularMember::class)->create();
+
+        $members = Member::paginate();
+
+        $this->assertCount(2, $members->filter(function ($member) {
+            return $member instanceof PremiumMember;
+        }));
+
+        $this->assertCount(1, $members->filter(function ($member) {
+            return $member instanceof RegularMember;
+        }));
+    }
+
+    /** @test */
     public function each_should_iterate_over_objects_of_the_correct_type()
     {
         $this->factory(Member::class, 2)->state(PremiumMember::class)->create();
@@ -197,12 +214,4 @@ class STIParentStaticTest extends TestCase
             $results['regular_count']++;
         }
     }
-
-    // Remaining tests
-    //
-    // updateOrCreate
-    // updateOrNew
-    // Paginate
-    //
-    // instance methods.
 }
