@@ -8,16 +8,14 @@ trait STI
 {
     // We'll have to make getTable smarter.
 
+    /**
+     * Return a new instance of the STI model or the subtype it represents.
+     */
     public function newInstance($attributes = [], $exists = false)
     {
-        $type = $attributes['type'] ?? null;
+        $type = $this->findClassnameThanksToAttributes($attributes);
 
-        if (!$type) {
-            return parent::newInstance($attributes, $exists);
-        }
-
-        $model = Model::getActualClassNameForMorph($type);
-        $model = new $model($attributes);
+        $model = new $type($attributes);
 
         $model->exists = $exists;
 
@@ -28,17 +26,15 @@ trait STI
         return $model;
     }
 
+    /**
+     * Return a new instance of the STI model or the subtype it represents.
+     */
     public function newFromBuilder($attributes = [], $connection = null)
     {
         $attributes = (array)$attributes;
-        $type = $attributes['type'] ?? null;
+        $type = $this->findClassnameThanksToAttributes($attributes);
 
-        if ($type) {
-            $type = Model::getActualClassNameForMorph($type);
-            $model = (new $type)->newInstance([], true);
-        } else {
-            $model = $this->newInstance([], true);
-        }
+        $model = (new $type)->newInstance([], true);
 
         $model->setRawAttributes($attributes, true);
 
@@ -115,5 +111,22 @@ trait STI
     public function inSTIParent(): bool
     {
         return static::class === self::class;
+    }
+
+    /**
+     * Given an array of attributes that may or may not contain a type what
+     * type of object should we create?
+     */
+    protected function findClassnameThanksToAttributes(array $attributes): string
+    {
+        return $attributes[$this->typeKey()] ?? static::class;
+    }
+
+    /**
+     * Return the column in which we should look for the model's type.
+     */
+    protected function typeKey(): string
+    {
+        return $this->stiTypeKey ?? 'type';
     }
 }

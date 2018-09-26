@@ -10,6 +10,7 @@
         }
     ],
     "require": {
+        "php": "^7.1",
         "illuminate/database": "5.7.*",
         "illuminate/events": "5.7.*"
     },
