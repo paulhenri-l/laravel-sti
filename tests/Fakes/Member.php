@@ -9,7 +9,5 @@ class Member extends Model
 {
     use STI;
 
-    protected $table = 'members';
-
     protected $guarded = [];
 }

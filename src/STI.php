@@ -6,7 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 trait STI
 {
-    // We'll have to make getTable smarter.
+    /**
+     * Allways use the STI parent model's table.
+     */
+    public function getTable()
+    {
+        if ($this->inSTIParent()) {
+            return parent::getTable();
+        }
+
+        return $this->newSTIParent()->getTable();
+    }
 
     /**
      * Return a new instance of the STI model or the subtype it represents.
@@ -108,16 +118,33 @@ trait STI
      * the testsuite :)
      * http://php.net/manual/en/language.oop5.late-static-bindings.php
      */
-    public function inSTIParent(): bool
+    public function inSTIParent()
     {
-        return static::class === self::class;
+        return static::class === $this->getSTIParentClassname();
+    }
+
+    /**
+     * Return a new instance of the STI parent model.
+     */
+    public function newSTIParent()
+    {
+        $class = $this->getSTIParentClassname();
+        return new $class;
+    }
+
+    /**
+     * Return the classname of the parent STI model.
+     */
+    public function getSTIParentClassname()
+    {
+        return self::class;
     }
 
     /**
      * Given an array of attributes that may or may not contain a type what
      * type of object should we create?
      */
-    protected function findClassnameThanksToAttributes(array $attributes): string
+    protected function findClassnameThanksToAttributes(array $attributes)
     {
         return $attributes[$this->typeKey()] ?? static::class;
     }
@@ -125,7 +152,7 @@ trait STI
     /**
      * Return the column in which we should look for the model's type.
      */
-    protected function typeKey(): string
+    protected function typeKey()
     {
         return $this->stiTypeKey ?? 'type';
     }
