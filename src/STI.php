@@ -2,10 +2,24 @@
 
 namespace PHL\LaravelSTI;
 
-use Illuminate\Database\Eloquent\Model;
-
 trait STI
 {
+    // Use initialiazable traits to dynamically add the type property
+
+    /**
+     * Scope all queries to the current subtype if it is made from a subtype.
+     */
+    public static function bootSTI()
+    {
+        if (static::inSTIParent()) {
+            return;
+        }
+
+        static::addGlobalScope(function ($query) {
+            return $query->where(static::typeKey(), static::class);
+        });
+    }
+
     /**
      * Allways use the STI parent model's table.
      */
