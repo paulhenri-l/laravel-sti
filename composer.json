@@ -1,0 +1,18 @@
+{
+    "name": "phl/laravel-sti",
+    "description": "Single table inheritance with eloquent",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "paulhenri-l",
+            "email": "25308170+paulhenri-l@users.noreply.github.com"
+        }
+    ],
+    "require": {
+        "illuminate/database": "5.7.*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^7.3"
+    }
+}
