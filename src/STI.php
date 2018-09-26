@@ -11,7 +11,7 @@ trait STI
      */
     public function getTable()
     {
-        if ($this->inSTIParent()) {
+        if (static::inSTIParent()) {
             return parent::getTable();
         }
 
@@ -69,7 +69,7 @@ trait STI
     {
         $model = $this->forwardCallTo($this->newQuery(), 'updateOrCreate', $args);
 
-        if (!$this->inSTIParent()) {
+        if (!static::inSTIParent()) {
             return $model;
         }
 
@@ -118,9 +118,17 @@ trait STI
      * the testsuite :)
      * http://php.net/manual/en/language.oop5.late-static-bindings.php
      */
-    public function inSTIParent()
+    public static function inSTIParent()
     {
-        return static::class === $this->getSTIParentClassname();
+        return static::class === static::getSTIParentClassname();
+    }
+
+    /**
+     * Return the classname of the parent STI model.
+     */
+    public static function getSTIParentClassname()
+    {
+        return self::class;
     }
 
     /**
@@ -130,14 +138,6 @@ trait STI
     {
         $class = $this->getSTIParentClassname();
         return new $class;
-    }
-
-    /**
-     * Return the classname of the parent STI model.
-     */
-    public function getSTIParentClassname()
-    {
-        return self::class;
     }
 
     /**
@@ -152,8 +152,8 @@ trait STI
     /**
      * Return the column in which we should look for the model's type.
      */
-    protected function typeKey()
+    protected static function typeKey()
     {
-        return $this->stiTypeKey ?? 'type';
+        return static::$stiTypeKey ?? 'type';
     }
 }
