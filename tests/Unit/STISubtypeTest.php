@@ -11,9 +11,7 @@ use Tests\TestCase;
 
 class STISubtypeTest extends TestCase
 {
-    // Add tests for cases where it should not find something find findOrFail etc...
     // Test cration methods (save, create etc...)
-    // Add blueprint method
     // use morphmap
     // test count
     // Remove types from *OrCreate / *OrNew

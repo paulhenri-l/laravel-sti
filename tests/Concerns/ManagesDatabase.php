@@ -60,7 +60,7 @@ trait ManagesDatabase
         Capsule::schema()->dropIfExists('members');
         Capsule::schema()->create('members', function ($table) {
             $table->increments('id');
-            $table->string('type');
+            $table->type();
             $table->string('name');
             $table->string('bio')->nullable();
             $table->timestamps();

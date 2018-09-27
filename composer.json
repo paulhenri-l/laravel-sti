@@ -24,7 +24,10 @@
     "autoload": {
         "psr-4": {
             "PHL\\LaravelSTI\\": "src/"
-        }
+        },
+        "files": [
+            "bootstrap/blueprint_macro.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
