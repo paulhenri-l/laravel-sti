@@ -13,8 +13,19 @@ class STISubtypeTest extends TestCase
 {
     // Test cration methods (save, create etc...)
     // use morphmap
-    // test count
-    // Remove types from *OrCreate / *OrNew
+    // Test with relationships
+
+    /**
+     * Test that count is scoped to the subtype it is called on.
+     */
+    public function testCount()
+    {
+        $this->factory(Member::class, 2)->state(PremiumMember::class)->create();
+        $this->factory(Member::class, 3)->state(RegularMember::class)->create();
+
+        $this->assertEquals(2, PremiumMember::count());
+        $this->assertEquals(3, RegularMember::count());
+    }
 
     /**
      * Test that first returns only objects of the subtype that it is called on.
@@ -34,8 +45,13 @@ class STISubtypeTest extends TestCase
      */
     public function testFind()
     {
-        $createdRegularMemeber = $this->factory(Member::class)->state(RegularMember::class)->create();
-        $createdPremiumMemeber = $this->factory(Member::class)->state(PremiumMember::class)->create();
+        $createdRegularMemeber = $this->factory(Member::class)
+            ->state(RegularMember::class)
+            ->create();
+
+        $createdPremiumMemeber = $this->factory(Member::class)
+            ->state(PremiumMember::class)
+            ->create();
 
         $regularMember = RegularMember::find($createdRegularMemeber->id);
         $premiumMember = RegularMember::find($createdPremiumMemeber->id);
@@ -49,8 +65,13 @@ class STISubtypeTest extends TestCase
      */
     public function testFindOrFail()
     {
-        $createdRegularMemeber = $this->factory(Member::class)->state(RegularMember::class)->create();
-        $createdPremiumMemeber = $this->factory(Member::class)->state(PremiumMember::class)->create();
+        $createdRegularMemeber = $this->factory(Member::class)
+            ->state(RegularMember::class)
+            ->create();
+
+        $createdPremiumMemeber = $this->factory(Member::class)
+            ->state(PremiumMember::class)
+            ->create();
 
         $regularMember = RegularMember::findOrFail($createdRegularMemeber->id);
         $this->assertInstanceOf(RegularMember::class, $regularMember);
@@ -75,13 +96,17 @@ class STISubtypeTest extends TestCase
             ->create(['name' => 'not-regular-find-me']);
 
         // First
-        $regularMember = RegularMember::firstOrNew(['name' => 'regular-find-me'], ['bio' => 'not-found']);
+        $regularMember = RegularMember::firstOrNew(
+            ['name' => 'regular-find-me'], ['bio' => 'not-found']
+        );
         $this->assertInstanceOf(RegularMember::class, $regularMember);
         $this->assertNotEquals('not-found', $regularMember->bio);
         $this->assertTrue($regularMember->exists);
 
         // New
-        $notRegularMember = RegularMember::firstOrNew(['name' => 'not-regular-find-me'], ['bio' => 'not-found']);
+        $notRegularMember = RegularMember::firstOrNew(
+            ['name' => 'not-regular-find-me'], ['bio' => 'not-found']
+        );
         $this->assertInstanceOf(RegularMember::class, $notRegularMember);
         $this->assertEquals('not-found', $notRegularMember->bio);
         $this->assertFalse($notRegularMember->exists);
@@ -103,13 +128,17 @@ class STISubtypeTest extends TestCase
             ->create(['name' => 'not-regular-find-me']);
 
         // First
-        $regularMember = RegularMember::firstOrCreate(['name' => 'regular-find-me'], ['bio' => 'not-found', 'type' => RegularMember::class]);
+        $regularMember = RegularMember::firstOrCreate(
+            ['name' => 'regular-find-me'], ['bio' => 'not-found']
+        );
         $this->assertInstanceOf(RegularMember::class, $regularMember);
         $this->assertNotEquals('not-found', $regularMember->bio);
         $this->assertTrue($regularMember->exists);
 
         // Create
-        $notRegularMember = RegularMember::firstOrCreate(['name' => 'not-regular-find-me'], ['bio' => 'not-found', 'type' => RegularMember::class]);
+        $notRegularMember = RegularMember::firstOrCreate(
+            ['name' => 'not-regular-find-me'], ['bio' => 'not-found']
+        );
         $this->assertInstanceOf(RegularMember::class, $notRegularMember);
         $this->assertEquals('not-found', $notRegularMember->bio);
         $this->assertTrue($notRegularMember->exists);
@@ -136,13 +165,11 @@ class STISubtypeTest extends TestCase
         $this->expectException(QueryException::class);
         RegularMember::firstOrCreate(['id' => $createdPremiumMember->id], [
             'name' => 'test',
-            'type' => RegularMember::class
         ]);
 
         $this->expectException(QueryException::class);
         RegularMember::updateOrCreate(['id' => $createdPremiumMember->id], [
             'name' => 'test',
-            'type' => RegularMember::class
         ]);
     }
 
@@ -161,13 +188,17 @@ class STISubtypeTest extends TestCase
             ->create(['name' => 'not-regular-find-me']);
 
         // First
-        $regularMember = RegularMember::updateOrCreate(['name' => 'regular-find-me'], ['bio' => 'updated', 'type' => RegularMember::class]);
+        $regularMember = RegularMember::updateOrCreate(
+            ['name' => 'regular-find-me'], ['bio' => 'updated']
+        );
         $this->assertInstanceOf(RegularMember::class, $regularMember);
         $this->assertEquals('updated', $regularMember->bio);
         $this->assertFalse($regularMember->wasRecentlyCreated);
 
         // Create
-        $notRegularMember = RegularMember::updateOrCreate(['name' => 'not-regular-find-me'], ['bio' => 'created', 'type' => RegularMember::class]);
+        $notRegularMember = RegularMember::updateOrCreate(
+            ['name' => 'not-regular-find-me'], ['bio' => 'created']
+        );
         $this->assertInstanceOf(RegularMember::class, $notRegularMember);
         $this->assertEquals('created', $notRegularMember->bio);
         $this->assertTrue($notRegularMember->wasRecentlyCreated);

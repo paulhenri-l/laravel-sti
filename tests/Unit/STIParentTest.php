@@ -26,7 +26,9 @@ class STIParentTest extends TestCase
      */
     public function testFind()
     {
-        $createdMemeber = $this->factory(Member::class)->state(RegularMember::class)->create();
+        $createdMemeber = $this->factory(Member::class)
+            ->state(RegularMember::class)
+            ->create();
 
         $member = Member::find($createdMemeber->id);
 
@@ -38,7 +40,9 @@ class STIParentTest extends TestCase
      */
     public function testFindOrFail()
     {
-        $createdMemeber = $this->factory(Member::class)->state(RegularMember::class)->create();
+        $createdMemeber = $this->factory(Member::class)
+            ->state(RegularMember::class)
+            ->create();
 
         $member = Member::findOrFail($createdMemeber->id);
 
@@ -85,7 +89,10 @@ class STIParentTest extends TestCase
             ->state(RegularMember::class)
             ->create(['name' => 'find-me']);
 
-        $member = Member::firstOrCreate(['name' => 'find-me'], ['bio' => 'new-bio']);
+        $member = Member::firstOrCreate(['name' => 'find-me'], [
+            'type' => RegularMember::class,
+            'bio' => 'new-bio'
+        ]);
 
         $this->assertInstanceOf(RegularMember::class, $member);
         $this->assertNotEquals('new-bio', $member->bio);
@@ -113,7 +120,9 @@ class STIParentTest extends TestCase
             ->state(RegularMember::class)
             ->create(['name' => 'find-me']);
 
-        $member = Member::updateOrCreate(['name' => 'find-me'], ['bio' => 'updated']);
+        $member = Member::updateOrCreate(['name' => 'find-me'], [
+            'bio' => 'updated'
+        ]);
 
         $this->assertInstanceOf(RegularMember::class, $member);
         $this->assertEquals('updated', $member->bio);
@@ -138,11 +147,15 @@ class STIParentTest extends TestCase
         $this->factory(Member::class, 2)->state(PremiumMember::class)->create();
         $this->factory(Member::class, 1)->state(RegularMember::class)->create();
 
-        $premiumMember = Member::whereType(PremiumMember::class)->take(1)->get()->first();;
-        $regularMember = Member::whereType(RegularMember::class)->take(1)->get()->first();
+        $this->assertInstanceOf(
+            PremiumMember::class,
+            Member::whereType(PremiumMember::class)->take(1)->get()->first()
+        );
 
-        $this->assertInstanceOf(PremiumMember::class, $premiumMember);
-        $this->assertInstanceOf(RegularMember::class, $regularMember);
+        $this->assertInstanceOf(
+            RegularMember::class,
+            Member::whereType(RegularMember::class)->take(1)->get()->first()
+        );
     }
 
     /**

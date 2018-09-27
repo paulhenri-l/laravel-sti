@@ -4,10 +4,17 @@ namespace PHL\LaravelSTI;
 
 trait STI
 {
-    // Use initialiazable traits to dynamically add the type property
-
+    /**
+     * When initializing a subtype dynamically set its type key.
+     */
     public function initializeSTI()
     {
+        if (static::inSTIParent()) {
+            // It could be cool to be able to specify a default type.
+            return;
+        }
+
+        $this->setAttribute(static::typeKey(), static::class);
     }
 
     /**
