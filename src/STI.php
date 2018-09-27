@@ -48,7 +48,7 @@ trait STI
      */
     public function newInstance($attributes = [], $exists = false)
     {
-        $type = $this->findClassnameThanksToAttributes($attributes);
+        $type = $this->findClassNameThanksToAttributes($attributes);
 
         $model = new $type($attributes);
 
@@ -67,7 +67,7 @@ trait STI
     public function newFromBuilder($attributes = [], $connection = null)
     {
         $attributes = (array)$attributes;
-        $type = $this->findClassnameThanksToAttributes($attributes);
+        $type = $this->findClassNameThanksToAttributes($attributes);
 
         $model = (new $type)->newInstance([], true);
 
@@ -146,13 +146,13 @@ trait STI
      */
     public static function inSTIParent()
     {
-        return static::class === static::getSTIParentClassname();
+        return static::class === static::getSTIParentClassName();
     }
 
     /**
-     * Return the classname of the parent STI model.
+     * Return the className of the parent STI model.
      */
-    public static function getSTIParentClassname()
+    public static function getSTIParentClassName()
     {
         return self::class;
     }
@@ -162,7 +162,7 @@ trait STI
      */
     public function newSTIParent()
     {
-        $class = $this->getSTIParentClassname();
+        $class = $this->getSTIParentClassName();
         return new $class;
     }
 
@@ -170,7 +170,7 @@ trait STI
      * Given an array of attributes that may or may not contain a type what
      * type of object should we create?
      */
-    protected function findClassnameThanksToAttributes(array $attributes)
+    protected function findClassNameThanksToAttributes(array $attributes)
     {
         return $attributes[$this->typeKey()] ?? static::class;
     }
