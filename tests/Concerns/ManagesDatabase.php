@@ -62,6 +62,7 @@ trait ManagesDatabase
             $table->increments('id');
             $table->string('type');
             $table->string('name');
+            $table->string('bio')->nullable();
             $table->timestamps();
         });
     }

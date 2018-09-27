@@ -3,6 +3,7 @@
 namespace Tests\Unit\Models\Concerns;
 
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
 use Tests\Fakes\Member;
 use Tests\Fakes\PremiumMember;
 use Tests\Fakes\RegularMember;
@@ -10,11 +11,17 @@ use Tests\TestCase;
 
 class STISubtypeTest extends TestCase
 {
-    // Careful - we do not want to overwrite exisiting members of other type when using *OrCreate
     // Add tests for cases where it should not find something find findOrFail etc...
+    // Test cration methods (save, create etc...)
+    // Add blueprint method
+    // use morphmap
+    // test count
+    // Remove types from *OrCreate / *OrNew
 
-    /** @test */
-    public function first_should_return_an_object_of_the_correct_type()
+    /**
+     * Test that first returns only objects of the subtype that it is called on.
+     */
+    public function testFirst()
     {
         $this->factory(Member::class)->state(PremiumMember::class)->create();
         $this->factory(Member::class)->state(RegularMember::class)->create();
@@ -24,116 +31,154 @@ class STISubtypeTest extends TestCase
         $this->assertInstanceOf(RegularMember::class, $member);
     }
 
-    /** @test */
-    public function find_should_return_an_object_of_the_correct_type()
+    /**
+     * Test that find returns only objects of the subtype that it is called on.
+     */
+    public function testFind()
     {
-        $createdMemeber = $this->factory(Member::class)->state(RegularMember::class)->create();
+        $createdRegularMemeber = $this->factory(Member::class)->state(RegularMember::class)->create();
+        $createdPremiumMemeber = $this->factory(Member::class)->state(PremiumMember::class)->create();
 
-        $member = RegularMember::find($createdMemeber->id);
+        $regularMember = RegularMember::find($createdRegularMemeber->id);
+        $premiumMember = RegularMember::find($createdPremiumMemeber->id);
 
-        $this->assertInstanceOf(RegularMember::class, $member);
+        $this->assertInstanceOf(RegularMember::class, $regularMember);
+        $this->assertNull($premiumMember);
     }
 
-    /** @test */
-    public function find_should_not_be_able_to_find_objects_of_other_types()
+    /**
+     * Test that find returns only objects of the subtype that it is called on.
+     */
+    public function testFindOrFail()
     {
-        $createdMemeber = $this->factory(Member::class)->state(PremiumMember::class)->create();
+        $createdRegularMemeber = $this->factory(Member::class)->state(RegularMember::class)->create();
+        $createdPremiumMemeber = $this->factory(Member::class)->state(PremiumMember::class)->create();
 
-        $member = RegularMember::find($createdMemeber->id);
-
-        $this->assertNull($member);
-    }
-
-    /** @test */
-    public function find_or_fail_should_return_an_object_of_the_correct_type()
-    {
-        $createdMemeber = $this->factory(Member::class)->state(RegularMember::class)->create();
-
-        $member = RegularMember::findOrFail($createdMemeber->id);
-
-        $this->assertInstanceOf(RegularMember::class, $member);
-    }
-
-    /** @test */
-    public function find_or_fail_should_fail_if_it_looks_for_an_object_of_another_type()
-    {
-        $createdMemeber = $this->factory(Member::class)->state(PremiumMember::class)->create();
+        $regularMember = RegularMember::findOrFail($createdRegularMemeber->id);
+        $this->assertInstanceOf(RegularMember::class, $regularMember);
 
         $this->expectException(ModelNotFoundException::class);
-        $member = RegularMember::findOrFail($createdMemeber->id);
-
-        $this->assertInstanceOf(RegularMember::class, $member);
+        RegularMember::findOrFail($createdPremiumMemeber->id);
     }
 
-    /** @test */
-    public function first_or_create_should_return_an_object_of_the_correct_type_if_it_finds_it()
+    /**
+     * Test that firstOrNew returns only objects of the subtype that it is
+     * called on. As a side effect this also tests that it makes them when not
+     * found.
+     */
+    public function testFirstOrNew()
     {
-        $createdMemeber = $this->factory(Member::class)->state(RegularMember::class)->create();
+        $this->factory(Member::class)
+            ->state(RegularMember::class)
+            ->create(['name' => 'regular-find-me']);
 
-        $member = RegularMember::firstOrCreate(['id' => $createdMemeber->id], ['name' => 'test']);
+        $this->factory(Member::class)
+            ->state(PremiumMember::class)
+            ->create(['name' => 'not-regular-find-me']);
 
-        $this->assertInstanceOf(RegularMember::class, $member);
+        // First
+        $regularMember = RegularMember::firstOrNew(['name' => 'regular-find-me'], ['bio' => 'not-found']);
+        $this->assertInstanceOf(RegularMember::class, $regularMember);
+        $this->assertNotEquals('not-found', $regularMember->bio);
+        $this->assertTrue($regularMember->exists);
+
+        // New
+        $notRegularMember = RegularMember::firstOrNew(['name' => 'not-regular-find-me'], ['bio' => 'not-found']);
+        $this->assertInstanceOf(RegularMember::class, $notRegularMember);
+        $this->assertEquals('not-found', $notRegularMember->bio);
+        $this->assertFalse($notRegularMember->exists);
     }
 
-    /** @test */
-    public function first_or_create_should_return_an_object_of_the_correct_type_when_it_creates_it()
+    /**
+     * Test that firstOrCreate returns only objects of the subtype that it is
+     * called on. As a side effect this also tests that it creates them when not
+     * found.
+     */
+    public function testFirstOrCreate()
     {
-        $member = RegularMember::firstOrCreate(['id' => 1], [
-            'type' => RegularMember::class,
-            'name' => 'test-created-user',
+        $this->factory(Member::class)
+            ->state(RegularMember::class)
+            ->create(['name' => 'regular-find-me']);
+
+        $this->factory(Member::class)
+            ->state(PremiumMember::class)
+            ->create(['name' => 'not-regular-find-me']);
+
+        // First
+        $regularMember = RegularMember::firstOrCreate(['name' => 'regular-find-me'], ['bio' => 'not-found', 'type' => RegularMember::class]);
+        $this->assertInstanceOf(RegularMember::class, $regularMember);
+        $this->assertNotEquals('not-found', $regularMember->bio);
+        $this->assertTrue($regularMember->exists);
+
+        // Create
+        $notRegularMember = RegularMember::firstOrCreate(['name' => 'not-regular-find-me'], ['bio' => 'not-found', 'type' => RegularMember::class]);
+        $this->assertInstanceOf(RegularMember::class, $notRegularMember);
+        $this->assertEquals('not-found', $notRegularMember->bio);
+        $this->assertTrue($notRegularMember->exists);
+        $this->assertTrue($notRegularMember->wasRecentlyCreated);
+    }
+
+    /**
+     * Tests that when you call *OrCreate and use the id of an object of another
+     * subtype in the search attributes that you will get an exception.
+     *
+     * This is due to the fact that a subtype cannot see other subtypes, it will
+     * therefore attempt to create a new model if the search attributes contains
+     * the id of another subtype. As ids should be unique the db will fail.
+     *
+     * IMO this is more of a limitation of Single table inheritance than a bug
+     * that's why I will not attempt to handle this situation.
+     */
+    public function testfirstOrCreateAndUpdateOrCreateFailsWithIds()
+    {
+        $createdPremiumMember = $this->factory(Member::class)
+            ->state(PremiumMember::class)
+            ->create();
+
+        $this->expectException(QueryException::class);
+        RegularMember::firstOrCreate(['id' => $createdPremiumMember->id], [
+            'name' => 'test',
+            'type' => RegularMember::class
         ]);
 
-        $this->assertInstanceOf(RegularMember::class, $member);
-        $this->assertEquals('test-created-user', $member->name);
-    }
-
-    /** @test */
-    public function first_or_new_should_return_an_object_of_the_correct_type_if_it_finds_it()
-    {
-        $createdMemeber = $this->factory(Member::class)->state(RegularMember::class)->create();
-
-        $member = RegularMember::firstOrNew(['id' => $createdMemeber->id], ['name' => 'test']);
-
-        $this->assertInstanceOf(RegularMember::class, $member);
-    }
-
-    /** @test */
-    public function first_or_new_should_return_an_object_of_the_correct_type_when_it_makes_it()
-    {
-        $member = RegularMember::firstOrNew(['id' => 1], [
-            'type' => RegularMember::class,
-            'name' => 'test-created-user',
+        $this->expectException(QueryException::class);
+        RegularMember::updateOrCreate(['id' => $createdPremiumMember->id], [
+            'name' => 'test',
+            'type' => RegularMember::class
         ]);
-
-        $this->assertInstanceOf(RegularMember::class, $member);
-        $this->assertEquals('test-created-user', $member->name);
     }
 
-    /** @test */
-    public function update_or_create_should_return_an_object_of_the_correct_type_if_it_updates_it()
+    /**
+     * Test that firstOrNew returns objects of the correct type when it
+     * updates or creates one.
+     */
+    public function testUpdateOrCreate()
     {
-        $createdMemeber = $this->factory(Member::class)->state(RegularMember::class)->create(['name' => 'test-name']);
+        $this->factory(Member::class)
+            ->state(RegularMember::class)
+            ->create(['name' => 'regular-find-me']);
 
-        $member = RegularMember::updateOrCreate(['id' => $createdMemeber->id], ['name' => 'test-updated-name']);
+        $this->factory(Member::class)
+            ->state(PremiumMember::class)
+            ->create(['name' => 'not-regular-find-me']);
 
-        $this->assertInstanceOf(RegularMember::class, $member);
-        $this->assertEquals('test-updated-name', $member->name);
+        // First
+        $regularMember = RegularMember::updateOrCreate(['name' => 'regular-find-me'], ['bio' => 'updated', 'type' => RegularMember::class]);
+        $this->assertInstanceOf(RegularMember::class, $regularMember);
+        $this->assertEquals('updated', $regularMember->bio);
+        $this->assertFalse($regularMember->wasRecentlyCreated);
+
+        // Create
+        $notRegularMember = RegularMember::updateOrCreate(['name' => 'not-regular-find-me'], ['bio' => 'created', 'type' => RegularMember::class]);
+        $this->assertInstanceOf(RegularMember::class, $notRegularMember);
+        $this->assertEquals('created', $notRegularMember->bio);
+        $this->assertTrue($notRegularMember->wasRecentlyCreated);
     }
 
-    /** @test */
-    public function update_or_create_should_return_an_object_of_the_correct_type_when_it_creates_it()
-    {
-        $member = RegularMember::updateOrCreate(['id' => 1], [
-            'type' => RegularMember::class,
-            'name' => 'test-created-user',
-        ]);
-
-        $this->assertInstanceOf(RegularMember::class, $member);
-        $this->assertEquals('test-created-user', $member->name);
-    }
-
-    /** @test */
-    public function take_should_return_objects_of_the_correct_type()
+    /**
+     * Test that take returns only objects of the subtype it is called on.
+     */
+    public function testTake()
     {
         $this->factory(Member::class, 2)->state(PremiumMember::class)->create();
         $this->factory(Member::class, 1)->state(RegularMember::class)->create();
@@ -149,8 +194,10 @@ class STISubtypeTest extends TestCase
         }));
     }
 
-    /** @test */
-    public function all_should_return_objects_of_different_types()
+    /**
+     * Test that all returns only objects of the subtype it is called on.
+     */
+    public function testAll()
     {
         $this->factory(Member::class, 2)->state(PremiumMember::class)->create();
         $this->factory(Member::class, 1)->state(RegularMember::class)->create();
@@ -166,8 +213,10 @@ class STISubtypeTest extends TestCase
         }));
     }
 
-    /** @test */
-    public function paginate_should_return_objects_of_different_types()
+    /**
+     * Test that paginate returns only objects of the subtype it is called on.
+     */
+    public function testPaginate()
     {
         $this->factory(Member::class, 2)->state(PremiumMember::class)->create();
         $this->factory(Member::class, 1)->state(RegularMember::class)->create();
@@ -183,8 +232,10 @@ class STISubtypeTest extends TestCase
         }));
     }
 
-    /** @test */
-    public function each_should_iterate_over_objects_of_the_correct_type()
+    /**
+     * Test that each iterates only over objects of the subtype it is called on.
+     */
+    public function testEach()
     {
         $this->factory(Member::class, 2)->state(PremiumMember::class)->create();
         $this->factory(Member::class)->state(RegularMember::class)->create();
@@ -199,8 +250,11 @@ class STISubtypeTest extends TestCase
         $this->assertEquals(1, $results['regular_count']);
     }
 
-    /** @test */
-    public function chunk_should_iterate_over_objects_of_the_correct_type()
+    /**
+     * Test that chunk iterates only over objects of the subtype it is
+     * called on.
+     */
+    public function testChunk()
     {
         $this->factory(Member::class, 2)->state(PremiumMember::class)->create();
         $this->factory(Member::class)->state(RegularMember::class)->create();
@@ -217,8 +271,11 @@ class STISubtypeTest extends TestCase
         $this->assertEquals(1, $results['regular_count']);
     }
 
-    /** @test */
-    public function cursor_should_iterate_over_objects_of_the_correct_type()
+    /**
+     * Test that cursor iterates only over objects of the subtype it is
+     * called on.
+     */
+    public function testCursor()
     {
         $this->factory(Member::class, 2)->state(PremiumMember::class)->create();
         $this->factory(Member::class)->state(RegularMember::class)->create();

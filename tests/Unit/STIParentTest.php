@@ -9,8 +9,10 @@ use Tests\TestCase;
 
 class STIParentTest extends TestCase
 {
-    /** @test */
-    public function first_should_return_an_object_of_the_correct_type()
+    /**
+     * Test that first returns objects of the correct type.
+     */
+    public function testFirst()
     {
         $this->factory(Member::class)->state(RegularMember::class)->create();
 
@@ -19,8 +21,10 @@ class STIParentTest extends TestCase
         $this->assertInstanceOf(RegularMember::class, $member);
     }
 
-    /** @test */
-    public function find_should_return_an_object_of_the_correct_type()
+    /**
+     * Test that find returns objects of the correct type.
+     */
+    public function testFind()
     {
         $createdMemeber = $this->factory(Member::class)->state(RegularMember::class)->create();
 
@@ -29,8 +33,10 @@ class STIParentTest extends TestCase
         $this->assertInstanceOf(RegularMember::class, $member);
     }
 
-    /** @test */
-    public function find_or_fail_should_return_an_object_of_the_correct_type()
+    /**
+     * Test that find or fail returns objects of the correct type.
+     */
+    public function testFindOrFail()
     {
         $createdMemeber = $this->factory(Member::class)->state(RegularMember::class)->create();
 
@@ -39,75 +45,95 @@ class STIParentTest extends TestCase
         $this->assertInstanceOf(RegularMember::class, $member);
     }
 
-    /** @test */
-    public function first_or_create_should_return_an_object_of_the_correct_type_if_it_finds_it()
+    /**
+     * Test that firstOrNew returns objects of the correct type when it
+     * finds or makes one.
+     */
+    public function testFirstOrNew()
     {
-        $createdMemeber = $this->factory(Member::class)->state(RegularMember::class)->create();
+        // First
+        $this->factory(Member::class)
+            ->state(RegularMember::class)
+            ->create(['name' => 'find-me']);
 
-        $member = Member::firstOrCreate(['id' => $createdMemeber->id], ['name' => 'test']);
-
-        $this->assertInstanceOf(RegularMember::class, $member);
-    }
-
-    /** @test */
-    public function first_or_create_should_return_an_object_of_the_correct_type_when_it_creates_it()
-    {
-        $member = Member::firstOrCreate(['id' => 1], [
-            'type' => RegularMember::class,
-            'name' => 'test-created-user',
+        $member = Member::firstOrNew(['name' => 'find-me'], [
+            'bio' => 'new-bio'
         ]);
 
         $this->assertInstanceOf(RegularMember::class, $member);
-        $this->assertEquals('test-created-user', $member->name);
-    }
+        $this->assertNotEquals('new-bio', $member->bio);
+        $this->assertTrue($member->exists);
 
-    /** @test */
-    public function first_or_new_should_return_an_object_of_the_correct_type_if_it_finds_it()
-    {
-        $createdMemeber = $this->factory(Member::class)->state(RegularMember::class)->create();
-
-        $member = Member::firstOrNew(['id' => $createdMemeber->id], ['name' => 'test']);
-
-        $this->assertInstanceOf(RegularMember::class, $member);
-    }
-
-    /** @test */
-    public function first_or_new_should_return_an_object_of_the_correct_type_when_it_makes_it()
-    {
-        $member = Member::firstOrNew(['id' => 1], [
+        // New
+        $member = Member::firstOrNew(['name' => 'i-do-not-exists'], [
             'type' => RegularMember::class,
-            'name' => 'test-created-user',
         ]);
 
         $this->assertInstanceOf(RegularMember::class, $member);
-        $this->assertEquals('test-created-user', $member->name);
+        $this->assertEquals('i-do-not-exists', $member->name);
+        $this->assertFalse($member->exists);
     }
 
-    /** @test */
-    public function update_or_create_should_return_an_object_of_the_correct_type_if_it_updates_it()
+    /**
+     * Test that firstOrCreate returns objects of the correct type when it
+     * finds or creates one.
+     */
+    public function testFirstOrCreate()
     {
-        $createdMemeber = $this->factory(Member::class)->state(RegularMember::class)->create(['name' => 'test-name']);
+        // First
+        $this->factory(Member::class)
+            ->state(RegularMember::class)
+            ->create(['name' => 'find-me']);
 
-        $member = Member::updateOrCreate(['id' => $createdMemeber->id], ['name' => 'test-updated-name']);
+        $member = Member::firstOrCreate(['name' => 'find-me'], ['bio' => 'new-bio']);
 
         $this->assertInstanceOf(RegularMember::class, $member);
-        $this->assertEquals('test-updated-name', $member->name);
-    }
+        $this->assertNotEquals('new-bio', $member->bio);
+        $this->assertTrue($member->exists);
 
-    /** @test */
-    public function update_or_create_should_return_an_object_of_the_correct_type_when_it_creates_it()
-    {
-        $member = Member::updateOrCreate(['id' => 1], [
+        // Create
+        $member = Member::firstOrCreate(['name' => 'i-do-not-exists'], [
             'type' => RegularMember::class,
-            'name' => 'test-created-user',
+            'bio' => 'not-found',
         ]);
 
         $this->assertInstanceOf(RegularMember::class, $member);
-        $this->assertEquals('test-created-user', $member->name);
+        $this->assertEquals('not-found', $member->bio);
+        $this->assertTrue($member->wasRecentlyCreated);
     }
 
-    /** @test */
-    public function take_should_return_objects_of_the_correct_type()
+    /**
+     * Test that firstOrNew returns objects of the correct type when it
+     * updates or creates one.
+     */
+    public function testUpdateOrCreate()
+    {
+        // Update
+        $this->factory(Member::class)
+            ->state(RegularMember::class)
+            ->create(['name' => 'find-me']);
+
+        $member = Member::updateOrCreate(['name' => 'find-me'], ['bio' => 'updated']);
+
+        $this->assertInstanceOf(RegularMember::class, $member);
+        $this->assertEquals('updated', $member->bio);
+        $this->assertFalse($member->wasRecentlyCreated);
+
+        // Create
+        $member = Member::updateOrCreate(['name' => 'i-do-not-exists'], [
+            'type' => RegularMember::class,
+            'bio' => 'created',
+        ]);
+
+        $this->assertInstanceOf(RegularMember::class, $member);
+        $this->assertEquals('created', $member->bio);
+        $this->assertTrue($member->wasRecentlyCreated);
+    }
+
+    /**
+     * Test that take returns objects of the correct type.
+     */
+    public function testTake()
     {
         $this->factory(Member::class, 2)->state(PremiumMember::class)->create();
         $this->factory(Member::class, 1)->state(RegularMember::class)->create();
@@ -119,8 +145,10 @@ class STIParentTest extends TestCase
         $this->assertInstanceOf(RegularMember::class, $regularMember);
     }
 
-    /** @test */
-    public function all_should_return_objects_of_different_types()
+    /**
+     * Test that all returns objects of the correct type.
+     */
+    public function testAll()
     {
         $this->factory(Member::class, 2)->state(PremiumMember::class)->create();
         $this->factory(Member::class, 1)->state(RegularMember::class)->create();
@@ -136,8 +164,10 @@ class STIParentTest extends TestCase
         }));
     }
 
-    /** @test */
-    public function paginate_should_return_objects_of_different_types()
+    /**
+     * Test that paginate returns objects of the correct type.
+     */
+    public function testPaginate()
     {
         $this->factory(Member::class, 2)->state(PremiumMember::class)->create();
         $this->factory(Member::class, 1)->state(RegularMember::class)->create();
@@ -153,8 +183,10 @@ class STIParentTest extends TestCase
         }));
     }
 
-    /** @test */
-    public function each_should_iterate_over_objects_of_the_correct_type()
+    /**
+     * Test that each iterates over objects of the correct type.
+     */
+    public function testEach()
     {
         $this->factory(Member::class, 2)->state(PremiumMember::class)->create();
         $this->factory(Member::class)->state(RegularMember::class)->create();
@@ -169,8 +201,10 @@ class STIParentTest extends TestCase
         $this->assertEquals(1, $results['regular_count']);
     }
 
-    /** @test */
-    public function chunk_should_iterate_over_objects_of_the_correct_type()
+    /**
+     * Test that chunk iterates over objects of the correct type.
+     */
+    public function testChunk()
     {
         $this->factory(Member::class, 2)->state(PremiumMember::class)->create();
         $this->factory(Member::class)->state(RegularMember::class)->create();
@@ -187,8 +221,10 @@ class STIParentTest extends TestCase
         $this->assertEquals(1, $results['regular_count']);
     }
 
-    /** @test */
-    public function cursor_should_iterate_over_objects_of_the_correct_type()
+    /**
+     * Test that chunk iterates over objects of the correct type.
+     */
+    public function testCursor()
     {
         $this->factory(Member::class, 2)->state(PremiumMember::class)->create();
         $this->factory(Member::class)->state(RegularMember::class)->create();

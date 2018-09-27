@@ -6,6 +6,10 @@ trait STI
 {
     // Use initialiazable traits to dynamically add the type property
 
+    public function initializeSTI()
+    {
+    }
+
     /**
      * Scope all queries to the current subtype if it is made from a subtype.
      */
@@ -129,8 +133,8 @@ trait STI
     /**
      * Are we currently in a subtype or the parent model.
      *
-     * Even though this if is extremely weird, it works and is covered by
-     * the testsuite :)
+     * Even though this method might look extremely weird fear not!
+     * It works like a charm and is covered by the testsuite :)
      * http://php.net/manual/en/language.oop5.late-static-bindings.php
      */
     public static function inSTIParent()
