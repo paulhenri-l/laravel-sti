@@ -89,6 +89,7 @@ trait STI
 
         if ($model->wasRecentlyCreated) {
             $model = $model->fresh();
+            $model->wasRecentlyCreated = true;
         }
 
         return $model;
