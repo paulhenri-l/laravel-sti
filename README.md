@@ -16,7 +16,7 @@ class Member extends Illuminate\Database\Eloquent\Model
 ```
 
 ```php
-Capsule::schema()->create('members', function ($table) {
+Schema::create('members', function ($table) {
     // ...
     $table->type();
     // ...
@@ -53,7 +53,7 @@ can specify it in the migration and in the model.
 class Member extends Illuminate\Database\Eloquent\Model
 {
     use PHL\LaravelSTI\STI;
-    
+
     protected static $stiTypeKey = 'custom_type_column'
 }
 ```
@@ -83,5 +83,5 @@ This helps avoid leaking code details into the DB.
 
 ## Read the source Luke!
 
-If you are currious about the implementation details, the code and tests have 
+If you are currious about the implementation details, the code and tests have
 been heavily documented :)
