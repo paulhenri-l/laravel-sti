@@ -4,6 +4,12 @@
 
 *This package can be used outside of a laravel app*
 
+## Installation
+
+```
+composer require phl/laravel-sti
+```
+
 ## Usage
 
 Besides using the trait and adding the type column there is nothing much to do.
