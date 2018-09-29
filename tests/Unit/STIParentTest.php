@@ -10,6 +10,30 @@ use Tests\TestCase;
 class STIParentTest extends TestCase
 {
     /**
+     * Test that create creates objects of the correct subtype.
+     */
+    public function testCreate()
+    {
+        $member = Member::create(['name' => 'name', 'type' => PremiumMember::class]);
+
+        $this->assertInstanceOf(PremiumMember::class, $member);
+        $this->assertEquals(PremiumMember::class, $member->type);
+    }
+
+    /**
+     * Test that save saves objects of the correct subtype.
+     *
+     * Note that it is not possible to "downcast" on save.
+     */
+    public function testSave()
+    {
+        $member = tap(new Member(['name' => 'name', 'type' => 'regular_member']))->save();
+
+        $this->assertInstanceOf(Member::class, $member);
+        $this->assertEquals('regular_member', $member->type);
+    }
+
+    /**
      * Test that first returns objects of the correct type.
      */
     public function testFirst()
@@ -255,17 +279,5 @@ class STIParentTest extends TestCase
 
         $this->assertEquals(2, $results['premium_count']);
         $this->assertEquals(1, $results['regular_count']);
-    }
-
-    /**
-     * Helper to count the number of time an object of a type has been seen.
-     */
-    protected function updateMemberCount(Member $member, array &$results)
-    {
-        if ($member instanceof PremiumMember) {
-            $results['premium_count']++;
-        } elseif ($member instanceof RegularMember) {
-            $results['regular_count']++;
-        }
     }
 }

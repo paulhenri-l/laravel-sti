@@ -61,8 +61,24 @@ trait ManagesDatabase
         Capsule::schema()->create('members', function ($table) {
             $table->increments('id');
             $table->type();
+            $table->unsignedInteger('plan_id')->nullable();
             $table->string('name');
             $table->string('bio')->nullable();
+            $table->timestamps();
+        });
+
+        Capsule::schema()->dropIfExists('subscriptions');
+        Capsule::schema()->create('subscriptions', function ($table) {
+            $table->increments('id');
+            $table->unsignedInteger('member_id');
+            $table->string('name');
+            $table->timestamps();
+        });
+
+        Capsule::schema()->dropIfExists('plans');
+        Capsule::schema()->create('plans', function ($table) {
+            $table->increments('id');
+            $table->string('name');
             $table->timestamps();
         });
     }

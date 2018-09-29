@@ -11,8 +11,27 @@ use Tests\TestCase;
 
 class STISubtypeTest extends TestCase
 {
-    // Test cration methods (save, create etc...)
-    // Test with relationships
+    /**
+     * Test that create creates objects of the correct subtype.
+     */
+    public function testCreate()
+    {
+        $member = PremiumMember::create(['name' => 'name']);
+
+        $this->assertInstanceOf(PremiumMember::class, $member);
+        $this->assertEquals(PremiumMember::class, $member->type);
+    }
+
+    /**
+     * Test that save saves objects of the correct subtype.
+     */
+    public function testSave()
+    {
+        $member = tap(new RegularMember(['name' => 'name']))->save();
+
+        $this->assertInstanceOf(RegularMember::class, $member);
+        $this->assertEquals('regular_member', $member->type);
+    }
 
     /**
      * Test that count is scoped to the subtype it is called on.
@@ -316,17 +335,5 @@ class STISubtypeTest extends TestCase
 
         $this->assertEquals(0, $results['premium_count']);
         $this->assertEquals(1, $results['regular_count']);
-    }
-
-    /**
-     * Helper to count the number of time an object of a type has been seen.
-     */
-    protected function updateMemberCount(Member $member, array &$results)
-    {
-        if ($member instanceof PremiumMember) {
-            $results['premium_count']++;
-        } elseif ($member instanceof RegularMember) {
-            $results['regular_count']++;
-        }
     }
 }
