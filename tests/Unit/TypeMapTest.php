@@ -15,8 +15,8 @@ class TypeMapTest extends TestCase
         parent::setUp();
 
         Relation::morphMap([
-            'regular_member' => RegularMember::class,
-            'premium_member' => PremiumMember::class
+            'foo' => Foo::class,
+            'bar' => Bar::class
         ]);
     }
 
@@ -26,13 +26,13 @@ class TypeMapTest extends TestCase
     public function testGetClassNameFromAlias()
     {
         $this->assertEquals(
-            RegularMember::class,
-            TypeMap::getClassName('regular_member')
+            Foo::class,
+            TypeMap::getClassName('foo')
         );
 
         $this->assertEquals(
-            PremiumMember::class,
-            TypeMap::getClassName('premium_member')
+            Bar::class,
+            TypeMap::getClassName('bar')
         );
     }
 
@@ -42,13 +42,13 @@ class TypeMapTest extends TestCase
     public function testGetAliasFromClassName()
     {
         $this->assertEquals(
-            'regular_member',
-            TypeMap::getAlias(RegularMember::class)
+            'foo',
+            TypeMap::getAlias(Foo::class)
         );
 
         $this->assertEquals(
-            'premium_member',
-            TypeMap::getAlias(PremiumMember::class)
+            'bar',
+            TypeMap::getAlias(Bar::class)
         );
     }
 }

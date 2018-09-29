@@ -2,6 +2,11 @@
 
 namespace PHL\LaravelSTI;
 
+use Illuminate\Database\Eloquent\Builder;
+
+/**
+ * @method static Builder whereSTIType($type)
+ */
 trait STI
 {
     /**
@@ -14,11 +19,11 @@ trait STI
             return;
         }
 
-        $this->setAttribute(static::typeKey(), static::class);
+        $this->setAttribute(static::typeKey(), TypeMap::getAlias(static::class));
     }
 
     /**
-     * Scope all queries to the current subtype if it is made from a subtype.
+     * Scope all queries to the current subtype (if we are in one).
      */
     public static function bootSTI()
     {
@@ -27,7 +32,7 @@ trait STI
         }
 
         static::addGlobalScope(function ($query) {
-            return $query->where(static::typeKey(), static::class);
+            return $query->whereSTIType(static::class);
         });
     }
 
@@ -41,6 +46,14 @@ trait STI
         }
 
         return $this->newSTIParent()->getTable();
+    }
+
+    /**
+     * Pass the given type through the type map before searching for it.
+     */
+    public function scopeWhereSTIType(Builder $query, $type)
+    {
+        return $query->where(static::typeKey(), TypeMap::getAlias($type));
     }
 
     /**
@@ -172,7 +185,7 @@ trait STI
      */
     protected function findClassNameThanksToAttributes(array $attributes)
     {
-        return $attributes[$this->typeKey()] ?? static::class;
+        return TypeMap::getClassName($attributes[$this->typeKey()] ?? static::class);
     }
 
     /**

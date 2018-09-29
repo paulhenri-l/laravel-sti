@@ -149,12 +149,17 @@ class STIParentTest extends TestCase
 
         $this->assertInstanceOf(
             PremiumMember::class,
-            Member::whereType(PremiumMember::class)->take(1)->get()->first()
+            Member::whereSTIType(PremiumMember::class)->take(1)->get()->first()
         );
 
         $this->assertInstanceOf(
             RegularMember::class,
-            Member::whereType(RegularMember::class)->take(1)->get()->first()
+            Member::whereSTIType(RegularMember::class)->take(1)->get()->first()
+        );
+
+        $this->assertInstanceOf(
+            RegularMember::class,
+            Member::whereSTIType('regular_member')->take(1)->get()->first()
         );
     }
 

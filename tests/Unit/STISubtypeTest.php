@@ -12,7 +12,6 @@ use Tests\TestCase;
 class STISubtypeTest extends TestCase
 {
     // Test cration methods (save, create etc...)
-    // use morphmap
     // Test with relationships
 
     /**
@@ -73,11 +72,11 @@ class STISubtypeTest extends TestCase
             ->state(PremiumMember::class)
             ->create();
 
-        $regularMember = RegularMember::findOrFail($createdRegularMemeber->id);
-        $this->assertInstanceOf(RegularMember::class, $regularMember);
+        $premiumMember = PremiumMember::findOrFail($createdPremiumMemeber->id);
+        $this->assertInstanceOf(PremiumMember::class, $premiumMember);
 
         $this->expectException(ModelNotFoundException::class);
-        RegularMember::findOrFail($createdPremiumMemeber->id);
+        PremiumMember::findOrFail($createdRegularMemeber->id);
     }
 
     /**
@@ -88,26 +87,26 @@ class STISubtypeTest extends TestCase
     public function testFirstOrNew()
     {
         $this->factory(Member::class)
-            ->state(RegularMember::class)
-            ->create(['name' => 'regular-find-me']);
+            ->state(PremiumMember::class)
+            ->create(['name' => 'premium-find-me']);
 
         $this->factory(Member::class)
-            ->state(PremiumMember::class)
-            ->create(['name' => 'not-regular-find-me']);
+            ->state(RegularMember::class)
+            ->create(['name' => 'not-premium-find-me']);
 
         // First
-        $regularMember = RegularMember::firstOrNew(
-            ['name' => 'regular-find-me'], ['bio' => 'not-found']
+        $premiumMember = PremiumMember::firstOrNew(
+            ['name' => 'premium-find-me'], ['bio' => 'not-found']
         );
-        $this->assertInstanceOf(RegularMember::class, $regularMember);
-        $this->assertNotEquals('not-found', $regularMember->bio);
-        $this->assertTrue($regularMember->exists);
+        $this->assertInstanceOf(PremiumMember::class, $premiumMember);
+        $this->assertNotEquals('not-found', $premiumMember->bio);
+        $this->assertTrue($premiumMember->exists);
 
         // New
-        $notRegularMember = RegularMember::firstOrNew(
-            ['name' => 'not-regular-find-me'], ['bio' => 'not-found']
+        $notRegularMember = PremiumMember::firstOrNew(
+            ['name' => 'not-premium-find-me'], ['bio' => 'not-found']
         );
-        $this->assertInstanceOf(RegularMember::class, $notRegularMember);
+        $this->assertInstanceOf(PremiumMember::class, $notRegularMember);
         $this->assertEquals('not-found', $notRegularMember->bio);
         $this->assertFalse($notRegularMember->exists);
     }

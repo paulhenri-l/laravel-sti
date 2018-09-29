@@ -6,8 +6,8 @@ use Tests\Fakes\RegularMember;
 use Faker\Generator as Faker;
 
 $types = [
+    'regular_member',
     PremiumMember::class,
-    RegularMember::class
 ];
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
@@ -17,7 +17,7 @@ $factory->define(Member::class, function (Faker $faker) use ($types) {
 });
 
 $factory->state(Member::class, RegularMember::class, [
-    'type' => RegularMember::class
+    'type' => 'regular_member'
 ]);
 
 $factory->state(Member::class, PremiumMember::class, [

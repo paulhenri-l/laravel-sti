@@ -2,7 +2,9 @@
 
 namespace Tests;
 
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Tests\Concerns\ManagesDatabase;
+use Tests\Fakes\RegularMember;
 
 abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
@@ -15,5 +17,9 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     {
         $this->prepareDbIfNecessary();
         $this->freshSchema();
+
+        Relation::morphMap([
+            'regular_member' => RegularMember::class,
+        ]);
     }
 }
