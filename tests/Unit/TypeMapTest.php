@@ -3,9 +3,7 @@
 namespace Tests\Unit;
 
 use Illuminate\Database\Eloquent\Relations\Relation;
-use PHL\LaravelSTI\TypeMap;
-use Tests\Fakes\PremiumMember;
-use Tests\Fakes\RegularMember;
+use PHL\STI\TypeMap;
 use Tests\TestCase;
 
 class TypeMapTest extends TestCase
