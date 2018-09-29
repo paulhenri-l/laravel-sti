@@ -1,3 +1,5 @@
+![Travis](https://api.travis-ci.org/paulhenri-l/laravel-sti.svg?branch=master)
+
 # Laravel STI
 
 > This is my take at bringing Single Table Inheritance (STI) to the Eloquent ORM.
