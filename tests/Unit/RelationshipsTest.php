@@ -23,6 +23,20 @@ class RelationshipsTest extends TestCase
     }
 
     /**
+     * Test that you can still retrieve relationships from a subtype.
+     */
+    public function testHasOneFromSubtypes()
+    {
+        $member = $this->factory(Member::class)->state(PremiumMember::class)->create();
+        $this->factory(Subscription::class)->create(['member_id' => $member->id]);
+
+        // Calling fresh will downcast it from Member to PremiumMember
+        $member = $member->fresh();
+
+        $this->assertInstanceOf(Subscription::class, $member->subscription);
+    }
+
+    /**
      * Test that has many return the correct sub types.
      *
      * If this test and the above pass, relationships should work just fine :)

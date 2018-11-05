@@ -3,6 +3,7 @@
 namespace PHL\LaravelSTI;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 
 /**
  * @method static Builder whereSTIType($type)
@@ -46,6 +47,18 @@ trait STI
         }
 
         return $this->newSTIParent()->getTable();
+    }
+
+    /**
+     * Use the STI parent class to infer the foreign key name.
+     */
+    public function getForeignKey()
+    {
+        $table = Str::snake(
+            class_basename(static::getSTIParentClassName())
+        );
+
+        return "{$table}_{$this->getKeyName()}";
     }
 
     /**
