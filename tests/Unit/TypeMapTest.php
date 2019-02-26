@@ -8,7 +8,7 @@ use Tests\TestCase;
 
 class TypeMapTest extends TestCase
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

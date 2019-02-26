@@ -15,7 +15,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     /**
      * Prepare the DB and load a fresh schema for your test suite.
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->prepareDbIfNecessary();
         $this->freshSchema();
